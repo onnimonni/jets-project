@@ -1,0 +1,40 @@
+version: '3.1'
+
+services:
+  jets:
+    build: .
+    volumes:
+      # Speed up development in OSX by using cached flag
+      - ./src:/app:cached
+      # Cache installed gems
+      - cached_bundle:/usr/local/bundle
+    environment:
+      DATABASE_URL: postgresql://dbuser:dbpass@db/development?pool=5
+      AWS_REGION: eu-west-1
+      # Use credentials from given shell
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?err}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?err}
+  server:
+    build: .
+    volumes:
+      # Speed up development in OSX by using cached flag
+      - ./src:/app:cached
+      # Cache installed gems
+      - cached_bundle:/usr/local/bundle
+    command: bin/local_server.sh
+    ports:
+      - 8888:8888
+    environment:
+      AWS_REGION: eu-west-1
+      # Use credentials from given shell
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?err}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?err}
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbpass
+      POSTGRES_DB: development
+
+volumes:
+  cached_bundle:
